@@ -1,1 +1,101 @@
-﻿<h1>Plant Walk - building live...</h1>
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#16191c">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="description" content="Plant Walk: a 6-minute energy assessment challenge. Read the instruments, diagnose the waste, quantify the savings.">
+  <title>Plant Walk · U-CREW Energy Assessment Challenge</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%23cc0000'/%3E%3Cpath d='M32 10a20 20 0 1 0 .1 0z' fill='none' stroke='%23fff' stroke-width='5'/%3E%3Cpath d='M32 32 44 20' stroke='%23fff' stroke-width='5' stroke-linecap='round'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <!-- shared gradients for instrument SVGs (kept rendered so every instrument can reference them) -->
+  <svg id="inst-defs" width="0" height="0" aria-hidden="true" focusable="false"></svg>
+
+  <!-- ============ TITLE ============ -->
+  <section id="screen-title" class="screen active" aria-labelledby="title-h">
+    <div class="title-wrap">
+      <div class="brand-mark" aria-hidden="true">
+        <svg viewBox="0 0 120 120">
+          <circle cx="60" cy="60" r="52" fill="#1f2327" stroke="#8d949b" stroke-width="6"/>
+          <circle cx="60" cy="60" r="44" fill="#f4f5f6"/>
+          <g stroke="#1b1e22" stroke-width="3">
+            <line x1="60" y1="20" x2="60" y2="28"/><line x1="88" y1="32" x2="83" y2="37"/><line x1="100" y1="60" x2="92" y2="60"/>
+            <line x1="32" y1="32" x2="37" y2="37"/><line x1="20" y1="60" x2="28" y2="60"/>
+          </g>
+          <path d="M60 60 L86 38" stroke="#cc0000" stroke-width="5" stroke-linecap="round"/>
+          <circle cx="60" cy="60" r="7" fill="#1b1e22"/>
+          <text x="60" y="88" text-anchor="middle" font-size="11" font-weight="800" fill="#1b1e22" font-family="Arial">$ / yr</text>
+        </svg>
+      </div>
+      <p class="kicker">University of Utah · U-CREW</p>
+      <h1 id="title-h">Plant Walk</h1>
+      <p class="subtitle">Energy Assessment Challenge</p>
+      <p class="tagline">6 minutes. 13 pieces of equipment. The waste is invisible — only the data tells.</p>
+      <div class="title-actions">
+        <button id="btn-start" class="btn btn-primary btn-xl">Start Plant Walk</button>
+        <div class="row2">
+          <button id="btn-howto" class="btn btn-ghost">How to Play</button>
+          <button id="btn-board" class="btn btn-ghost">Leaderboard</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ GAME ============ -->
+  <section id="screen-game" class="screen" aria-label="Plant floor">
+    <header class="hud">
+      <div class="hud-cell timer" id="hud-timer" aria-live="off"><span class="lbl">Time</span><span class="val" id="timer">6:00</span></div>
+      <div class="hud-cell money"><span class="lbl">Savings $/yr</span><span class="val" id="ticker">$0</span></div>
+      <div class="hud-cell count"><span class="lbl">Done</span><span class="val" id="resolved">0/13</span></div>
+      <button class="hud-btn" id="btn-hint" aria-label="Hint: costs 30 seconds"><span class="ico">?</span><span class="lbl">−30 s</span></button>
+      <button class="hud-btn" id="btn-mute" aria-label="Toggle sound"><span class="ico" id="mute-ico">♪</span><span class="lbl" id="mute-lbl">Sound</span></button>
+    </header>
+    <nav class="zones" id="zones" role="tablist" aria-label="Plant zones"></nav>
+    <div class="game-body">
+      <div class="scene-wrap" id="scene"></div>
+      <aside class="sheet" id="sheet" aria-live="polite">
+        <div class="sheet-empty">
+          <div class="big">Tap any equipment to inspect it</div>
+          <p>Read every instrument, then diagnose. Nothing on the floor looks wasteful — the numbers are your only clue.</p>
+        </div>
+      </aside>
+    </div>
+    <div class="float-pen" id="float-pen" aria-hidden="true"></div>
+  </section>
+
+  <!-- ============ END ============ -->
+  <section id="screen-end" class="screen" aria-label="Results">
+    <div class="end-wrap" id="end"></div>
+  </section>
+
+  <!-- ============ MODALS ============ -->
+  <div class="modal" id="modal-howto" role="dialog" aria-modal="true" aria-labelledby="howto-h" hidden>
+    <div class="modal-card">
+      <h2 id="howto-h">How to Play</h2>
+      <ol class="howto">
+        <li><b>Inspect.</b> Tap equipment, then tap every instrument to read it. No hissing, no flicker — waste only shows up in the data.</li>
+        <li><b>Diagnose.</b> Pick the right action. Wrong = <b>−30 s</b> and the finding is lost. Spot efficient gear with “Already efficient” for <b>+15 s</b>.</li>
+        <li><b>Quantify.</b> Pick the annual $ savings. Right = full $, wrong = half. Most $/yr in 6:00 wins.</li>
+      </ol>
+      <p class="fine">Defaults: 6,000 h/yr · $0.08/kWh · $12/kW-month · $8/MMBtu</p>
+      <button class="btn btn-primary" data-close>Got it</button>
+    </div>
+  </div>
+  <div class="modal" id="modal-board" role="dialog" aria-modal="true" aria-labelledby="board-h" hidden>
+    <div class="modal-card">
+      <h2 id="board-h">Top 10 Assessors</h2>
+      <div id="board-list"></div>
+      <button class="btn btn-primary" data-close>Close</button>
+    </div>
+  </div>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <div class="overlay-msg" id="overlay-msg" hidden></div>
+  <canvas id="confetti" aria-hidden="true"></canvas>
+
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>
